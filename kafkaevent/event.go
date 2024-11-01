@@ -1,4 +1,4 @@
-package localkafka
+package kafkaevent
 
 type KafkaEvent struct {
 	Records map[string][]KafkaMessage `json:"records"`

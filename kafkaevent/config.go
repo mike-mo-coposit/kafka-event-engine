@@ -1,4 +1,4 @@
-package localkafka
+package kafkaevent
 
 import (
 	"log"
