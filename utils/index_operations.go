@@ -7,9 +7,8 @@ import (
 	"fmt"
 	"log"
 
-	"shareutils/opensearch"
-
 	"github.com/elastic/go-elasticsearch/v8/esapi"
+	"github.com/mike-mo-coposit/kafka-event-engine/opensearch"
 )
 
 func CreateDocument(index string, id string, data interface{}) error {
