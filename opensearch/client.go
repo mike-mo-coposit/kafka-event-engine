@@ -3,7 +3,6 @@ package opensearch
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -12,19 +11,24 @@ import (
 	"github.com/elastic/go-elasticsearch/v8"
 )
 
+type OpenSearchConfig struct {
+	environment   string
+	region        string
+	awsCredential AWSCredential
+}
+
+type AWSCredential struct {
+	AWS_ACCESS_KEY_ID     string
+	AWS_SECRET_ACCESS_KEY string
+}
+
 // Client is a global instance of the elasticsearch client
 var Client *elasticsearch.Client
 
 // InitClient initializes the OpenSearch client with environment-based configuration
-func InitClient() {
-	// Get environment (staging, uat, production) from the environment variable
-	environment := os.Getenv("ENVIRONMENT")
-	if environment == "" {
-		log.Fatal("ENVIRONMENT variable is not set")
-	}
-
+func InitClient(config OpenSearchConfig) (*elasticsearch.Client, error) {
 	// Fetch OpenSearch configuration from AWS Parameter Store
-	endpoint, username, password, err := fetchOpenSearchConfig(environment)
+	endpoint, username, password, err := fetchOpenSearchConfig(config)
 	if err != nil {
 		log.Fatalf("Failed to fetch OpenSearch configuration: %s", err)
 	}
@@ -40,30 +44,26 @@ func InitClient() {
 	if err != nil {
 		log.Fatalf("Error creating OpenSearch client: %s", err)
 	}
+
+	return Client, nil
 }
 
 // fetchOpenSearchConfig retrieves OpenSearch configuration for the specified environment
-func fetchOpenSearchConfig(environment string) (endpoint, username, password string, err error) {
-	region := os.Getenv("AWS_OPENSEARCH_REGION")
-	if region == "" {
-		// region = "your-region" // Fallback region if not set as an environment variable
-		log.Fatalf("Environment AWS_OPENSEARH_REGION is NOT SET")
-	}
-
-	accessKey := os.Getenv("AWS_ACCESS_KEY_ID")
-	secretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	if accessKey == "" || secretKey == "" {
-		log.Fatalf("AWS credentials are not set")
-	}
+func fetchOpenSearchConfig(config OpenSearchConfig) (endpoint, username, password string, err error) {
+	// accessKey := os.Getenv("AWS_ACCESS_KEY_ID")
+	// secretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	// if accessKey == "" || secretKey == "" {
+	// 	log.Fatalf("AWS credentials are not set")
+	// }
 
 	// Create session with explicit credentials
 	ssmClient := ssm.New(session.Must(session.NewSession(&aws.Config{
-		Region:      aws.String(region),
-		Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
+		Region:      aws.String(config.region),
+		Credentials: credentials.NewStaticCredentials(config.awsCredential.AWS_ACCESS_KEY_ID, config.awsCredential.AWS_SECRET_ACCESS_KEY, ""),
 	})))
 
 	// Define the base path for the parameters
-	path := fmt.Sprintf("/ammoze/querycentre/%s/", environment)
+	path := fmt.Sprintf("/ammoze/querycentre/%s/", config.environment)
 
 	// Fetch parameters by path
 	input := &ssm.GetParametersByPathInput{
