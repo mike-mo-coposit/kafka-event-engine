@@ -12,12 +12,12 @@ import (
 )
 
 type OpenSearchConfig struct {
-	environment   string
-	region        string
-	awsCredential AWSCredential
+	ENVIRONMENT string
+	REGION      string
+	AWS         AWSCredentialConfig
 }
 
-type AWSCredential struct {
+type AWSCredentialConfig struct {
 	AWS_ACCESS_KEY_ID     string
 	AWS_SECRET_ACCESS_KEY string
 }
@@ -50,20 +50,14 @@ func InitClient(config OpenSearchConfig) (*elasticsearch.Client, error) {
 
 // fetchOpenSearchConfig retrieves OpenSearch configuration for the specified environment
 func fetchOpenSearchConfig(config OpenSearchConfig) (endpoint, username, password string, err error) {
-	// accessKey := os.Getenv("AWS_ACCESS_KEY_ID")
-	// secretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	// if accessKey == "" || secretKey == "" {
-	// 	log.Fatalf("AWS credentials are not set")
-	// }
-
 	// Create session with explicit credentials
 	ssmClient := ssm.New(session.Must(session.NewSession(&aws.Config{
-		Region:      aws.String(config.region),
-		Credentials: credentials.NewStaticCredentials(config.awsCredential.AWS_ACCESS_KEY_ID, config.awsCredential.AWS_SECRET_ACCESS_KEY, ""),
+		Region:      aws.String(config.REGION),
+		Credentials: credentials.NewStaticCredentials(config.AWS.AWS_ACCESS_KEY_ID, config.AWS.AWS_SECRET_ACCESS_KEY, ""),
 	})))
 
 	// Define the base path for the parameters
-	path := fmt.Sprintf("/ammoze/querycentre/%s/", config.environment)
+	path := fmt.Sprintf("/ammoze/querycentre/%s/", config.ENVIRONMENT)
 
 	// Fetch parameters by path
 	input := &ssm.GetParametersByPathInput{
