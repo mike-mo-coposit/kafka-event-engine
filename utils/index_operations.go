@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/mike-mo-coposit/kafka-event-engine/opensearch"
+	"github.com/opensearch-project/opensearch-go/opensearchapi"
 )
 
 func CreateDocument(index string, id string, data interface{}) error {
@@ -17,11 +17,11 @@ func CreateDocument(index string, id string, data interface{}) error {
 		return fmt.Errorf("failed to marshal data: %w", err)
 	}
 
-	// Use bytes.NewReader to create a reader from the JSON byte slice
-	req := esapi.IndexRequest{
+	// Create the IndexRequest with opensearchapi
+	req := opensearchapi.IndexRequest{
 		Index:      index,
 		DocumentID: id,
-		Body:       bytes.NewReader(jsonData), // corrected here
+		Body:       bytes.NewReader(jsonData),
 	}
 
 	res, err := req.Do(context.Background(), opensearch.Client)
@@ -46,11 +46,11 @@ func UpdateDocument(index string, id string, data interface{}) error {
 		return fmt.Errorf("failed to marshal data: %w", err)
 	}
 
-	// Use bytes.NewReader to create a reader from the JSON byte slice
-	req := esapi.IndexRequest{
+	// Use opensearchapi.UpdateRequest instead for partial updates
+	req := opensearchapi.UpdateRequest{
 		Index:      index,
 		DocumentID: id,
-		Body:       bytes.NewReader(jsonData), // corrected here
+		Body:       bytes.NewReader(jsonData),
 	}
 
 	res, err := req.Do(context.Background(), opensearch.Client)

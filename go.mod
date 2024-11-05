@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/elastic/go-elasticsearch/v8 v8.15.0
+	github.com/opensearch-project/opensearch-go v1.1.0
 )
 
 require (
