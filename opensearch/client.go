@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
-	"github.com/elastic/go-elasticsearch/v8"
+	"github.com/opensearch-project/opensearch-go" // OpenSearch client library
 )
 
 type OpenSearchConfig struct {
@@ -22,11 +22,11 @@ type AWSCredentialConfig struct {
 	AWS_SECRET_ACCESS_KEY string
 }
 
-// Client is a global instance of the elasticsearch client
-var Client *elasticsearch.Client
+// Client is a global instance of the OpenSearch client
+var Client *opensearch.Client
 
 // InitClient initializes the OpenSearch client with environment-based configuration
-func InitClient(config OpenSearchConfig) (*elasticsearch.Client, error) {
+func InitClient(config OpenSearchConfig) (*opensearch.Client, error) {
 	// Fetch OpenSearch configuration from AWS Parameter Store
 	endpoint, username, password, err := fetchOpenSearchConfig(config)
 	if err != nil {
@@ -34,13 +34,13 @@ func InitClient(config OpenSearchConfig) (*elasticsearch.Client, error) {
 	}
 
 	// Set up OpenSearch client with fetched configuration
-	cfg := elasticsearch.Config{
+	cfg := opensearch.Config{
 		Addresses: []string{endpoint},
 		Username:  username,
 		Password:  password,
 	}
 
-	Client, err = elasticsearch.NewClient(cfg)
+	Client, err = opensearch.NewClient(cfg)
 	if err != nil {
 		log.Fatalf("Error creating OpenSearch client: %s", err)
 	}
